@@ -277,13 +277,13 @@ svg{display:block;width:100%;height:auto;border-radius:12px}
   <div class="hero"><h1>How to Play</h1><p>Official Break & Bank rules.</p></div>
   <div class="card rules">
     <ol>
-      <li>The app calls one object ball, one pocket, and a point value.</li>
+      <li>The app calls one object ball, one pocket, and a difficulty level.</li>
       <li>Rack the called ball at the front of a three-ball mini-rack.</li>
       <li>Use any two other object balls behind it.</li>
       <li>Break the rack and let all balls stop.</li>
       <li>Bank the called ball into the designated pocket.</li>
-      <li>The called ball must touch at least one rail before entering the pocket.</li>
-      <li>A scratch, wrong pocket, wrong ball, or non-bank counts as a miss.</li>
+      <li>The required rail count changes with the difficulty level and is shown on screen.</li>
+      <li>A scratch, wrong pocket, wrong ball, incorrect rail count, or illegal contact counts as a miss.</li>
       <li>Golden Ball must be activated before the break. A successful challenge earns double points. A miss uses the Golden Ball.</li>
     </ol>
   </div>
@@ -318,6 +318,19 @@ svg{display:block;width:100%;height:auto;border-radius:12px}
         <div class="label-top">Points</div>
         <div id="pointsDisplay" class="points-big">10</div>
         <strong>POINTS</strong>
+      </div>
+    </div>
+
+    <div class="card" style="margin:12px 14px 0;background:#0d1419;border-color:#3b4650">
+      <div class="grid2">
+        <div>
+          <div class="label-top">Difficulty</div>
+          <div id="difficultyDisplay" style="font-size:28px;font-weight:900;margin-top:6px">MEDIUM</div>
+        </div>
+        <div>
+          <div class="label-top">Shot Requirement</div>
+          <div id="requirementDisplay" style="font-size:18px;font-weight:800;margin-top:8px">1 rail • called pocket</div>
+        </div>
       </div>
     </div>
 
@@ -421,7 +434,13 @@ const pockets=[
   {name:"LOWER SIDE",text:"lower-side",arrow:"↓",x:50,y:49},
   {name:"LOWER RIGHT",text:"lower-right",arrow:"↘",x:96,y:48}
 ];
-const pointValues=[6,8,10,12];
+const difficultyLevels=[
+  {name:"EASY",points:2,rails:1,requirement:"1 rail • either corner pocket",pocketMode:"corner"},
+  {name:"MEDIUM",points:4,rails:1,requirement:"1 rail • called pocket",pocketMode:"called"},
+  {name:"HARD",points:6,rails:2,requirement:"2 rails • called pocket",pocketMode:"called"},
+  {name:"EXPERT",points:8,rails:2,requirement:"2+ rails • no object-ball contact",pocketMode:"called",noContact:true},
+  {name:"PRO SHOT",points:10,rails:3,requirement:"exactly 3 rails • called pocket",pocketMode:"called",exactRails:true}
+];
 
 let state={
   eventName:"Bank Roll Night",
@@ -442,10 +461,13 @@ function showScreen(id){
 }
 function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
 function newChallenge(){
+  const difficulty=rand(difficultyLevels);
+  const cornerPockets=pockets.filter(p=>p.name.includes("LEFT")||p.name.includes("RIGHT"));
   state.challenge={
     ball:Math.floor(Math.random()*15)+1,
-    pocket:rand(pockets),
-    points:rand(pointValues)
+    pocket:difficulty.pocketMode==="corner"?rand(cornerPockets):rand(pockets),
+    difficulty,
+    points:difficulty.points
   };
   state.goldActive=false;
   state.challengeLocked=false;
@@ -486,6 +508,9 @@ function renderGame(){
   if(!state.players.length||!state.challenge)return;
   const p=state.players[state.currentPlayer];
   const c=state.challenge;
+  if(!c.difficulty){
+    c.difficulty=difficultyLevels.find(d=>d.points===c.points)||difficultyLevels[1];
+  }
   const displayPoints=c.points*(state.goldActive?2:1);
 
   document.getElementById("currentPlayer").textContent=p.name;
@@ -502,10 +527,19 @@ function renderGame(){
   document.getElementById("pocketArrow").textContent=c.pocket.arrow;
   document.getElementById("pocketText").textContent=c.pocket.name;
   document.getElementById("pointsDisplay").textContent=displayPoints;
+  document.getElementById("difficultyDisplay").textContent=c.difficulty.name;
+  document.getElementById("requirementDisplay").textContent=c.difficulty.requirement;
   document.getElementById("rackFrontText").textContent=`${c.ball}-ball`;
   document.getElementById("rackCalled").style.background=ballColors[c.ball];
   document.querySelector("#rackCalled span").textContent=c.ball;
-  document.getElementById("challengeRule").innerHTML=`Break the rack. After the balls stop, bank the <strong>${c.ball}-ball</strong> into the <strong>${c.pocket.text} pocket</strong>.`;
+  let pocketInstruction=c.difficulty.pocketMode==="corner"
+    ?`either corner pocket (highlighted target: <strong>${c.pocket.text}</strong>)`
+    :`the <strong>${c.pocket.text} pocket</strong>`;
+  let railInstruction=c.difficulty.exactRails
+    ?`using exactly <strong>${c.difficulty.rails} rails</strong>`
+    :`using at least <strong>${c.difficulty.rails} rail${c.difficulty.rails>1?"s":""}</strong>`;
+  let contactInstruction=c.difficulty.noContact?` without contacting another object ball`:``;
+  document.getElementById("challengeRule").innerHTML=`<strong>${c.difficulty.name}:</strong> Break the rack. After the balls stop, bank the <strong>${c.ball}-ball</strong> into ${pocketInstruction} ${railInstruction}${contactInstruction}.`;
   document.getElementById("tableCalledBall").setAttribute("fill",ballColors[c.ball]);
   document.getElementById("tableCalledNumber").textContent=c.ball;
   renderTablePockets(c.pocket);
@@ -531,7 +565,7 @@ function endTurn(success){
   if(state.goldActive)player.gold=false;
   if(success)player.score+=earned;
   document.getElementById("status").textContent=success
-    ?`${player.name} made the ${state.challenge.ball}-ball bank and earned ${earned} points.`
+    ?`${player.name} completed the ${state.challenge.difficulty.name} challenge and earned ${earned} points.`
     :`${player.name} missed the challenge and earned no points.`;
 
   if(player.score>=state.winningScore){
