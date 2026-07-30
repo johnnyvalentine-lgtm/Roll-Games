@@ -1,9 +1,21 @@
+None selected
+
+Skip to content
+Using Gmail with screen readers
+Out of storage
+Your payment failed
+Emails will stop on Aug 25. Update your payment info to restore your Google One 100 GB plan.
+Conversations
+106% of 15 GB used
+Terms · Privacy · Program Policies
+Last account activity: 0 minutes ago
+Details
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Bank Roll Premium v5.0 — Correct Rack Position</title>
+<title>Bank Roll Premium v7.0 — Winning Score</title>
 <style>
 :root{
   --bg:#050706;--panel:#111713;--panel2:#171e19;--gold:#f4c94f;--green:#08734b;
@@ -72,6 +84,11 @@ button{cursor:pointer}
 .setup label{display:block;margin:12px 0 5px;font-weight:900}
 .setup input{width:100%;padding:12px;border-radius:9px;border:1px solid #666;background:#050706;color:#fff}
 .setup button{width:100%;margin-top:16px;padding:14px;border:0;border-radius:10px;background:#16873a;color:#fff;font-weight:1000}
+.winnerbox{width:min(560px,100%);background:linear-gradient(#171d19,#0b0f0c);border:2px solid #f4c94f;border-radius:20px;padding:24px;text-align:center;box-shadow:0 0 30px #f4c94f55}
+.winnerbox h1{margin:0;color:#f4c94f;font-size:30px}
+.winnerbox h2{margin:14px 0 18px}
+.winnerbox button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:10px;background:#16873a;color:#fff;font-weight:1000}
+button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:860px){
  .top{grid-template-columns:120px 1fr}.help{grid-column:1/-1}.logo{font-size:25px}.title{font-size:18px}
  .challenge{grid-template-columns:repeat(2,1fr)}.cbox:last-child{grid-column:1/-1}
@@ -102,6 +119,7 @@ button{cursor:pointer}
       <div class="card"><h3>ENTRY FEE</h3><div class="big" id="feeText">$20</div></div>
       <div class="card"><h3>PRIZE POT</h3><div class="big money" id="potText">$100</div></div>
       <div class="card"><h3>ROUND</h3><div class="big" id="roundText">1</div></div>
+      <div class="card"><h3>WINNING SCORE</h3><div class="big" id="winningScoreText">100</div></div>
       <button class="action gold" id="goldBtn" onclick="toggleGolden()">GOLDEN BALL ×1</button>
       <button class="action" id="jackpotBtn" onclick="toggleJackpot()">JACKPOT +$50</button>
     </aside>
@@ -156,7 +174,18 @@ button{cursor:pointer}
     <input id="namesInput" value="John, Mike, Sarah, Dave, Lisa">
     <label>Entry fee per player</label>
     <input id="feeInput" type="number" min="0" value="20">
+    <label>Points needed to end the game</label>
+    <input id="winningScoreInput" type="number" min="1" value="100">
     <button onclick="startGame()">START TOURNAMENT</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="winnerModal">
+  <div class="winnerbox">
+    <h1 id="winnerTitle">TOURNAMENT WINNER</h1>
+    <h2 id="winnerName"></h2>
+    <div id="finalStandings"></div>
+    <button onclick="resetGame()">START NEW TOURNAMENT</button>
   </div>
 </div>
 
@@ -182,7 +211,10 @@ let state={
   challenge:1,
   goldenActive:false,
   jackpot:false,
-  challengeData:null
+  challengeData:null,
+  winningScore:100,
+  finalRound:false,
+  ended:false
 };
 
 function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
@@ -196,12 +228,18 @@ function startGame(){
   const names=document.getElementById("namesInput").value.split(",").map(x=>x.trim()).filter(Boolean).slice(0,10);
   state.players=(names.length?names:["Player 1","Player 2"]).map(name=>({name,score:0,golden:true}));
   state.fee=Math.max(0,+document.getElementById("feeInput").value||0);
+  state.winningScore=Math.max(1,+document.getElementById("winningScoreInput").value||100);
+  state.finalRound=false;
+  state.ended=false;
   document.getElementById("setupModal").classList.add("hidden");
   createChallenge(false);
 }
 function createChallenge(increment=true){
-  if(!state.players.length)return;
-  if(increment){state.challenge++;state.round++}
+  if(!state.players.length || state.ended)return;
+  if(increment){
+    state.challenge++;
+    state.round++;
+  }
   const rear1=rand(rearNumbers);
   const rear2=rand(rearNumbers.filter(n=>n!==rear1));
   state.challengeData={
@@ -226,6 +264,7 @@ function render(){
   document.getElementById("feeText").textContent="$"+state.fee;
   document.getElementById("potText").textContent="$"+(state.players.length*state.fee+(state.jackpot?50:0));
   document.getElementById("roundText").textContent=state.round;
+  document.getElementById("winningScoreText").textContent=state.winningScore;
 
   document.getElementById("rearA").textContent=d.rear1;
   document.getElementById("rearB").textContent=d.rear2;
@@ -285,35 +324,78 @@ function record(made){
   if(state.goldenActive)player.golden=false;
   state.goldenActive=false;
 
+  if(made && player.score>=state.winningScore){
+    state.finalRound=true;
+  }
+
   if(state.current<state.players.length-1){
     state.current++;
     render();
+    if(state.finalRound){
+      toast("Winning score reached — finish this round");
+    }
   }else{
-    toast("Round complete — new challenge");
-    setTimeout(()=>createChallenge(true),900);
+    if(state.finalRound){
+      setTimeout(endTournament,700);
+    }else{
+      toast("Round complete — new challenge");
+      setTimeout(()=>createChallenge(true),900);
+    }
   }
 }
+
+function endTournament(){
+  state.ended=true;
+  const sorted=[...state.players].sort((a,b)=>b.score-a.score);
+  const topScore=sorted[0].score;
+  const winners=sorted.filter(p=>p.score===topScore);
+  const names=winners.map(p=>p.name).join(" & ");
+  const winnerText=winners.length>1
+    ? `TIE GAME! ${names} finish with ${topScore} points.`
+    : `${names} WINS with ${topScore} points!`;
+
+  document.getElementById("madeBtn").disabled=true;
+  document.querySelector(".miss").disabled=true;
+  document.getElementById("goldBtn").disabled=true;
+  document.getElementById("jackpotBtn").disabled=true;
+
+  document.getElementById("winnerTitle").textContent=winners.length>1 ? "TOURNAMENT TIE" : "TOURNAMENT WINNER";
+  document.getElementById("winnerName").textContent=winnerText;
+  document.getElementById("finalStandings").innerHTML=sorted.map((p,i)=>
+    `<div style="display:flex;justify-content:space-between;gap:18px;padding:8px 0;border-bottom:1px solid #333">
+      <span>${i+1}. ${p.name}</span><strong style="color:#f4c94f">${p.score}</strong>
+    </div>`
+  ).join("");
+  document.getElementById("winnerModal").classList.remove("hidden");
+  localStorage.setItem("bankRollV5",JSON.stringify(state));
+}
+
 function saveGame(){
-  localStorage.setItem("bankRollV3",JSON.stringify(state));
+  localStorage.setItem("bankRollV5",JSON.stringify(state));
   toast("Tournament saved");
 }
 function resetGame(){
   if(confirm("Reset the tournament?")){
-    localStorage.removeItem("bankRollV3");
+    localStorage.removeItem("bankRollV5");
     location.reload();
   }
 }
 function showRules(){
-  alert("Every player shoots the same challenge once. The 9 ball is always fixed at the front/apex on the left side of the rack, facing the cue ball. Only the two rear balls change. Make the called shot to earn the difficulty points. Golden Ball doubles one attempt. Jackpot doubles the challenge again.");
+  alert("Every player shoots the same challenge once. The 9 ball is always fixed at the front/apex on the left side of the rack, facing the cue ball. Only the two rear balls change. Make the called shot to earn the difficulty points. The game enters its final round when a player reaches the selected winning score, and every remaining player completes that same challenge. Golden Ball doubles one attempt. Jackpot doubles the challenge again.");
 }
 window.addEventListener("load",()=>{
-  const saved=localStorage.getItem("bankRollV3");
+  const saved=localStorage.getItem("bankRollV5");
   if(saved && confirm("Resume your saved Bank Roll tournament?")){
     state=JSON.parse(saved);
+    if(!state.winningScore) state.winningScore=100;
+    if(typeof state.finalRound!=="boolean") state.finalRound=false;
     document.getElementById("setupModal").classList.add("hidden");
     render();
+    if(state.ended) setTimeout(endTournament,100);
   }
 });
 </script>
 </body>
 </html>
+Bank_Roll_Premium_v7_Winning_Score 2.html
+Displaying Bank_Roll_Premium_v7_Winning_Score 2.html.
