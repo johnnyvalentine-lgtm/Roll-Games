@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bank Roll: Break & Bank</title>
+<style>
+:root{
+  --bg:#07100c;
+  --panel:#0f1b16;
+  --panel2:#14241d;
+  --line:#284235;
+  --text:#f5f7f6;
+  --muted:#b6c3bc;
+  --green:#0d6b3d;
+  --green2:#0a4f30;
+  --red:#8d1717;
+  --gold:#e2b84b;
+  --blue:#1b62ae;
+  --good:#198a38;
+  --bad:#ad2020;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:linear-gradient(180deg,#06100b,#0c1712 45%,#07100c);
+  color:var(--text);
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:920px;margin:auto;padding:14px 14px 90px}
+.screen{display:none}
+.screen.active{display:block}
+.hero{
+  background:linear-gradient(180deg,var(--red),#4d0b0b);
+  border:1px solid #b14a4a;
+  border-radius:18px;
+  padding:18px;
+  text-align:center;
+  margin-bottom:14px;
+}
+.hero h1{margin:0;font-size:30px;letter-spacing:.04em}
+.hero p{margin:6px 0 0;color:#f4dede}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:14px;
+}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.metric{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+}
+.metric span{display:block;color:var(--muted);font-size:12px}
+.metric strong{font-size:20px}
+.menu{display:grid;gap:10px}
+.btn{
+  width:100%;
+  border:none;
+  border-radius:14px;
+  padding:14px;
+  color:white;
+  background:#24342c;
+  font-weight:700;
+}
+.btn.primary{background:var(--blue)}
+.btn.gold{background:var(--gold);color:#251c05}
+.btn.good{background:var(--good)}
+.btn.bad{background:var(--bad)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}
+input,select{
+  width:100%;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#0b1712;
+  color:white;
+  padding:12px;
+}
+.player-entry{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  margin-bottom:8px;
+}
+.challenge-board{
+  border:2px solid var(--gold);
+  border-radius:18px;
+  overflow:hidden;
+  background:linear-gradient(180deg,#0b4d31,#061b12);
+  margin-bottom:14px;
+}
+.challenge-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+}
+.challenge-cell{
+  padding:16px;
+  text-align:center;
+  border-right:1px solid rgba(255,255,255,.16);
+}
+.challenge-cell:last-child{border-right:none}
+.label-top{
+  color:#ffe29a;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.06em;
+}
+.ball-big{
+  width:78px;height:78px;border-radius:50%;
+  margin:12px auto 6px;
+  display:grid;place-items:center;
+  font-size:25px;font-weight:800;
+  border:2px solid rgba(255,255,255,.85);
+  box-shadow:inset -10px -12px 15px rgba(0,0,0,.35);
+}
+.points-big{font-size:48px;color:#ffd65c;font-weight:800;margin-top:8px}
+.rack-area{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  align-items:center;
+  padding:16px;
+  border-top:1px solid rgba(255,255,255,.16);
+}
+.rack{
+  position:relative;
+  width:180px;
+  height:150px;
+  margin:auto;
+  border:3px solid var(--gold);
+  clip-path:polygon(50% 0,100% 100%,0 100%);
+  background:rgba(0,0,0,.2);
+}
+.rack-ball{
+  position:absolute;
+  width:56px;height:56px;border-radius:50%;
+  display:grid;place-items:center;
+  border:2px solid rgba(255,255,255,.8);
+  font-weight:800;
+  box-shadow:inset -7px -10px 12px rgba(0,0,0,.35);
+}
+.rack-ball span{
+  width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;background:white;color:#111;font-size:12px
+}
+.apex{left:61px;top:14px}
+.rear1{left:32px;top:78px}
+.rear2{left:90px;top:78px}
+.rule{
+  margin:0 16px 16px;
+  padding:12px;
+  background:rgba(0,0,0,.4);
+  border-radius:12px;
+  text-align:center;
+}
+.table-shell{
+  background:#5d321b;
+  border-radius:18px;
+  padding:9px;
+  margin-bottom:14px;
+}
+svg{display:block;width:100%;height:auto;border-radius:12px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.leaderboard{display:grid;gap:8px}
+.player-row{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+  align-items:center;
+  padding:11px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:var(--panel2);
+}
+.player-row.active{border-color:var(--gold)}
+.status{color:var(--muted);min-height:22px;margin:10px 0}
+.footer-nav{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  background:#08110d;
+  border-top:1px solid var(--line);
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  z-index:10;
+}
+.footer-nav button{
+  background:transparent;color:var(--muted);
+  border:none;padding:12px 4px;font-size:12px
+}
+.footer-nav button.active{color:white;background:#14231c}
+.rules li{margin-bottom:8px;color:#d0d9d4}
+.winner{
+  text-align:center;
+  padding:24px 14px;
+}
+.winner .trophy{font-size:64px}
+.small{font-size:13px;color:var(--muted)}
+@media(max-width:640px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .metrics .metric:first-child{grid-column:1/-1}
+  .challenge-grid{grid-template-columns:1fr}
+  .challenge-cell{border-right:none;border-bottom:1px solid rgba(255,255,255,.16)}
+  .rack-area{grid-template-columns:1fr}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="home" class="screen active">
+  <div class="hero">
+    <h1>★ BANK ROLL ★</h1>
+    <p>BREAK & BANK</p>
+  </div>
+  <div class="card">
+    <div class="menu">
+      <button class="btn primary" id="startBtn">▶ Start Tournament</button>
+      <button class="btn" id="howBtn">📖 How to Play</button>
+      <button class="btn" id="resumeBtn">↩ Resume Saved Game</button>
+      <button class="btn ghost" id="clearSaveBtn">Clear Saved Game</button>
+    </div>
+  </div>
+  <div class="card">
+    <strong>Core challenge</strong>
+    <p class="small">Rack the called ball at the front with any two other object balls. Break the rack, then bank the called ball into the required pocket.</p>
+  </div>
+</section>
+
+<section id="setup" class="screen">
+  <div class="hero"><h1>Tournament Setup</h1><p>Create your Break & Bank game.</p></div>
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <label for="eventName">Event name</label>
+        <input id="eventName" value="Bank Roll Night">
+      </div>
+      <div>
+        <label for="winningScore">Winning score</label>
+        <select id="winningScore">
+          <option>25</option><option selected>50</option><option>75</option><option>100</option>
+        </select>
+      </div>
+      <div>
+        <label for="entryFee">Entry fee per player</label>
+        <input id="entryFee" type="number" min="0" step="1" value="5">
+      </div>
+      <div>
+        <label for="firstShooter">First shooter</label>
+        <select id="firstShooter">
+          <option value="random">Randomize</option>
+          <option value="order">Use entered order</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <strong>Players</strong>
+    <div id="playerInputs" style="margin-top:10px"></div>
+    <div class="grid2">
+      <button class="btn" id="addPlayerBtn">+ Add Player</button>
+      <button class="btn primary" id="launchBtn">Start Game</button>
+    </div>
+  </div>
+  <button class="btn ghost" data-back-home>Back</button>
+</section>
+
+<section id="rules" class="screen">
+  <div class="hero"><h1>How to Play</h1><p>Official Break & Bank rules.</p></div>
+  <div class="card rules">
+    <ol>
+      <li>The app calls one object ball, one pocket, and a difficulty level.</li>
+      <li>Rack the called ball at the front of a three-ball mini-rack.</li>
+      <li>Use any two other object balls behind it.</li>
+      <li>Break the rack and let all balls stop.</li>
+      <li>Bank the called ball into the designated pocket.</li>
+      <li>The required rail count changes with the difficulty level and is shown on screen.</li>
+      <li>A scratch, wrong pocket, wrong ball, incorrect rail count, or illegal contact counts as a miss.</li>
+      <li>Golden Ball must be activated before the break. A successful challenge earns double points. A miss uses the Golden Ball.</li>
+    </ol>
+  </div>
+  <button class="btn ghost" data-back-home>Back</button>
+</section>
+
+<section id="game" class="screen">
+  <div class="metrics">
+    <div class="metric"><span>Current player</span><strong id="currentPlayer">—</strong></div>
+    <div class="metric"><span>Score</span><strong id="currentScore">0 / 50</strong></div>
+    <div class="metric"><span>Golden Ball</span><strong id="goldState">Available</strong></div>
+  </div>
+
+  <div class="hero">
+    <h1 id="eventTitle">★ BREAK & BANK ★</h1>
+    <p id="potText">Prize pot: $0</p>
+  </div>
+
+  <div class="challenge-board">
+    <div class="challenge-grid">
+      <div class="challenge-cell">
+        <div class="label-top">Called Ball</div>
+        <div id="calledBallDisplay" class="ball-big">3</div>
+        <strong id="calledBallText">3-BALL</strong>
+      </div>
+      <div class="challenge-cell">
+        <div class="label-top">Pocket</div>
+        <div id="pocketArrow" style="font-size:42px;margin-top:10px">↙</div>
+        <strong id="pocketText">LOWER LEFT</strong>
+      </div>
+      <div class="challenge-cell">
+        <div class="label-top">Points</div>
+        <div id="pointsDisplay" class="points-big">10</div>
+        <strong>POINTS</strong>
+      </div>
+    </div>
+
+    <div class="card" style="margin:12px 14px 0;background:#0d1419;border-color:#3b4650">
+      <div class="grid2">
+        <div>
+          <div class="label-top">Difficulty</div>
+          <div id="difficultyDisplay" style="font-size:28px;font-weight:900;margin-top:6px">MEDIUM</div>
+        </div>
+        <div>
+          <div class="label-top">Shot Requirement</div>
+          <div id="requirementDisplay" style="font-size:18px;font-weight:800;margin-top:8px">1 rail • called pocket</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rack-area">
+      <div>
+        <div class="label-top" style="text-align:center;margin-bottom:8px">Rack</div>
+        <div class="rack">
+          <div id="rackCalled" class="rack-ball apex"><span>3</span></div>
+          <div class="rack-ball rear1" style="background:#245ab7"><span>?</span></div>
+          <div class="rack-ball rear2" style="background:#683b96"><span>?</span></div>
+        </div>
+      </div>
+      <div>
+        <p><strong>FRONT:</strong> <span id="rackFrontText">3-ball</span></p>
+        <p><strong>BEHIND:</strong> Any two object balls</p>
+        <p class="small">The other two balls do not matter. They become natural obstacles after the break.</p>
+      </div>
+    </div>
+
+    <div class="rule" id="challengeRule">Break the rack. After the balls stop, bank the 3-ball into the lower-left pocket.</div>
+  </div>
+
+  <div class="table-shell">
+    <svg viewBox="0 0 100 52" aria-label="Pool table showing a three-ball rack and target pocket">
+      <defs>
+        <linearGradient id="felt" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#17886c"/>
+          <stop offset="1" stop-color="#07503c"/>
+        </linearGradient>
+      </defs>
+      <rect width="100" height="52" rx="4" fill="url(#felt)"/>
+      <rect x="3" y="3" width="94" height="46" rx="2" fill="none" stroke="#2d160b" stroke-width="2"/>
+      <g id="tablePockets"></g>
+      <circle cx="20" cy="26" r="3.2" fill="#f5f2e9" stroke="#c7c4bb"/>
+      <polygon points="67,26 82,17.5 82,34.5" fill="none" stroke="#e2b84b" stroke-width=".7" stroke-dasharray="2 2"/>
+      <circle id="tableCalledBall" cx="72" cy="26" r="3.2" stroke="white" stroke-width=".5"/>
+      <circle cx="78" cy="22.5" r="3.2" fill="#245ab7" stroke="white" stroke-width=".5"/>
+      <circle cx="78" cy="29.5" r="3.2" fill="#683b96" stroke="white" stroke-width=".5"/>
+      <circle cx="72" cy="26" r="1.2" fill="white"/>
+      <text id="tableCalledNumber" x="72" y="26.25" text-anchor="middle" dominant-baseline="middle" font-size="1.7" font-weight="700" fill="#111">3</text>
+    </svg>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="newChallengeBtn">🎲 New Challenge</button>
+    <button class="btn gold" id="goldBtn">⭐ Activate Golden Ball</button>
+    <button class="btn good" id="madeBtn">✓ Challenge Made</button>
+    <button class="btn bad" id="missedBtn">✕ Challenge Missed</button>
+  </div>
+
+  <div class="status" id="status" aria-live="polite">Rack the called ball at the front with any two other object balls.</div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px">
+      <strong>Leaderboard</strong>
+      <span id="raceBadge" class="small">Race to 50</span>
+    </div>
+    <div id="leaderboard" class="leaderboard"></div>
+  </div>
+
+  <div class="grid2">
+    <button class="btn ghost" id="saveBtn">Save Game</button>
+    <button class="btn ghost" id="endBtn">End Tournament</button>
+  </div>
+</section>
+
+<section id="winner" class="screen">
+  <div class="hero"><h1>🏆 WINNER 🏆</h1><p id="winnerEvent">Bank Roll Tournament</p></div>
+  <div class="card winner">
+    <div class="trophy">🏆</div>
+    <h2 id="winnerName">John Wins!</h2>
+    <p id="winnerScore"></p>
+    <p id="winnerPot"></p>
+  </div>
+  <div class="card">
+    <strong>Final Standings</strong>
+    <div id="finalStandings" class="leaderboard" style="margin-top:10px"></div>
+  </div>
+  <div class="grid2">
+    <button class="btn primary" id="playAgainBtn">Play Again</button>
+    <button class="btn ghost" data-back-home>Home</button>
+  </div>
+</section>
+
+</div>
+
+<div class="footer-nav">
+  <button class="active" data-nav="home">Home</button>
+  <button data-nav="setup">Tournament</button>
+  <button data-nav="rules">Rules</button>
+  <button data-nav="game">Game</button>
+</div>
+
+<script>
+const ballColors={1:"#e7c51d",2:"#245ab7",3:"#c73535",4:"#683b96",5:"#e06a20",6:"#287548",7:"#6f261f",8:"#171717",9:"#e7c51d",10:"#245ab7",11:"#c73535",12:"#683b96",13:"#e06a20",14:"#287548",15:"#6f261f"};
+const pockets=[
+  {name:"UPPER LEFT",text:"upper-left",arrow:"↖",x:4,y:4},
+  {name:"UPPER SIDE",text:"upper-side",arrow:"↑",x:50,y:3},
+  {name:"UPPER RIGHT",text:"upper-right",arrow:"↗",x:96,y:4},
+  {name:"LOWER LEFT",text:"lower-left",arrow:"↙",x:4,y:48},
+  {name:"LOWER SIDE",text:"lower-side",arrow:"↓",x:50,y:49},
+  {name:"LOWER RIGHT",text:"lower-right",arrow:"↘",x:96,y:48}
+];
+const difficultyLevels=[
+  {name:"EASY",points:2,rails:1,requirement:"1 rail • either corner pocket",pocketMode:"corner"},
+  {name:"MEDIUM",points:4,rails:1,requirement:"1 rail • called pocket",pocketMode:"called"},
+  {name:"HARD",points:6,rails:2,requirement:"2 rails • called pocket",pocketMode:"called"},
+  {name:"EXPERT",points:8,rails:2,requirement:"2+ rails • no object-ball contact",pocketMode:"called",noContact:true},
+  {name:"PRO SHOT",points:10,rails:3,requirement:"exactly 3 rails • called pocket",pocketMode:"called",exactRails:true}
+];
+
+let state={
+  eventName:"Bank Roll Night",
+  winningScore:50,
+  entryFee:5,
+  players:[],
+  currentPlayer:0,
+  challenge:null,
+  goldActive:false,
+  challengeLocked:false,
+  finished:false
+};
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
+  document.querySelectorAll(".footer-nav button").forEach(b=>b.classList.toggle("active",b.dataset.nav===id));
+  window.scrollTo(0,0);
+}
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function newChallenge(){
+  const difficulty=rand(difficultyLevels);
+  const cornerPockets=pockets.filter(p=>p.name.includes("LEFT")||p.name.includes("RIGHT"));
+  state.challenge={
+    ball:Math.floor(Math.random()*15)+1,
+    pocket:difficulty.pocketMode==="corner"?rand(cornerPockets):rand(pockets),
+    difficulty,
+    points:difficulty.points
+  };
+  state.goldActive=false;
+  state.challengeLocked=false;
+  document.getElementById("status").textContent="New challenge loaded. Rack the called ball at the front with any two other object balls.";
+  renderGame();
+}
+function addPlayerInput(name=""){
+  const wrap=document.createElement("div");
+  wrap.className="player-entry";
+  wrap.innerHTML=`<input class="playerNameInput" placeholder="Player name" value="${name.replace(/"/g,"&quot;")}"><button class="btn bad removePlayerBtn" type="button">Remove</button>`;
+  wrap.querySelector(".removePlayerBtn").addEventListener("click",()=>wrap.remove());
+  document.getElementById("playerInputs").appendChild(wrap);
+}
+function initializeSetup(){
+  const box=document.getElementById("playerInputs");
+  if(!box.children.length){
+    addPlayerInput("John");
+    addPlayerInput("Lisa");
+  }
+}
+function startGame(){
+  const names=[...document.querySelectorAll(".playerNameInput")].map(i=>i.value.trim()).filter(Boolean);
+  if(names.length<2){alert("Add at least two players.");return}
+  state.eventName=document.getElementById("eventName").value.trim()||"Bank Roll Tournament";
+  state.winningScore=Number(document.getElementById("winningScore").value)||50;
+  state.entryFee=Math.max(0,Number(document.getElementById("entryFee").value)||0);
+  state.players=names.map(name=>({name,score:0,gold:true}));
+  state.currentPlayer=document.getElementById("firstShooter").value==="random"?Math.floor(Math.random()*names.length):0;
+  state.finished=false;
+  newChallenge();
+  showScreen("game");
+  saveGame();
+}
+function renderTablePockets(target){
+  document.getElementById("tablePockets").innerHTML=pockets.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="${p===target?3.2:2.8}" fill="#080808" stroke="${p===target?"#e2b84b":"none"}" stroke-width="2"/>`).join("");
+}
+function renderGame(){
+  if(!state.players.length||!state.challenge)return;
+  const p=state.players[state.currentPlayer];
+  const c=state.challenge;
+  if(!c.difficulty){
+    c.difficulty=difficultyLevels.find(d=>d.points===c.points)||difficultyLevels[1];
+  }
+  const displayPoints=c.points*(state.goldActive?2:1);
+
+  document.getElementById("currentPlayer").textContent=p.name;
+  document.getElementById("currentScore").textContent=`${p.score} / ${state.winningScore}`;
+  document.getElementById("goldState").textContent=state.goldActive?"In Play":p.gold?"Available":"Used";
+  document.getElementById("eventTitle").textContent=state.eventName;
+  document.getElementById("potText").textContent=`Prize pot: $${(state.entryFee*state.players.length).toFixed(0)}`;
+  document.getElementById("raceBadge").textContent=`Race to ${state.winningScore}`;
+
+  const ball=document.getElementById("calledBallDisplay");
+  ball.textContent=c.ball;
+  ball.style.background=ballColors[c.ball];
+  document.getElementById("calledBallText").textContent=`${c.ball}-BALL`;
+  document.getElementById("pocketArrow").textContent=c.pocket.arrow;
+  document.getElementById("pocketText").textContent=c.pocket.name;
+  document.getElementById("pointsDisplay").textContent=displayPoints;
+  document.getElementById("difficultyDisplay").textContent=c.difficulty.name;
+  document.getElementById("requirementDisplay").textContent=c.difficulty.requirement;
+  document.getElementById("rackFrontText").textContent=`${c.ball}-ball`;
+  document.getElementById("rackCalled").style.background=ballColors[c.ball];
+  document.querySelector("#rackCalled span").textContent=c.ball;
+  let pocketInstruction=c.difficulty.pocketMode==="corner"
+    ?`either corner pocket (highlighted target: <strong>${c.pocket.text}</strong>)`
+    :`the <strong>${c.pocket.text} pocket</strong>`;
+  let railInstruction=c.difficulty.exactRails
+    ?`using exactly <strong>${c.difficulty.rails} rails</strong>`
+    :`using at least <strong>${c.difficulty.rails} rail${c.difficulty.rails>1?"s":""}</strong>`;
+  let contactInstruction=c.difficulty.noContact?` without contacting another object ball`:``;
+  document.getElementById("challengeRule").innerHTML=`<strong>${c.difficulty.name}:</strong> Break the rack. After the balls stop, bank the <strong>${c.ball}-ball</strong> into ${pocketInstruction} ${railInstruction}${contactInstruction}.`;
+  document.getElementById("tableCalledBall").setAttribute("fill",ballColors[c.ball]);
+  document.getElementById("tableCalledNumber").textContent=c.ball;
+  renderTablePockets(c.pocket);
+
+  document.getElementById("goldBtn").disabled=!p.gold||state.goldActive||state.challengeLocked;
+  document.getElementById("madeBtn").disabled=state.challengeLocked;
+  document.getElementById("missedBtn").disabled=state.challengeLocked;
+  document.getElementById("newChallengeBtn").disabled=state.challengeLocked===false;
+
+  const ordered=[...state.players].map((pl,i)=>({...pl,index:i})).sort((a,b)=>b.score-a.score);
+  document.getElementById("leaderboard").innerHTML=ordered.map((pl,rank)=>`
+    <div class="player-row ${pl.index===state.currentPlayer?"active":""}">
+      <strong>${rank+1}. ${pl.name}</strong>
+      <span>${pl.gold?"⭐":"—"}</span>
+      <strong>${pl.score}</strong>
+    </div>`).join("");
+}
+function endTurn(success){
+  if(state.challengeLocked)return;
+  const player=state.players[state.currentPlayer];
+  const earned=success?state.challenge.points*(state.goldActive?2:1):0;
+  state.challengeLocked=true;
+  if(state.goldActive)player.gold=false;
+  if(success)player.score+=earned;
+  document.getElementById("status").textContent=success
+    ?`${player.name} completed the ${state.challenge.difficulty.name} challenge and earned ${earned} points.`
+    :`${player.name} missed the challenge and earned no points.`;
+
+  if(player.score>=state.winningScore){
+    state.finished=true;
+    showWinner(player);
+    saveGame();
+    return;
+  }
+  state.currentPlayer=(state.currentPlayer+1)%state.players.length;
+  saveGame();
+  setTimeout(()=>{newChallenge()},650);
+  renderGame();
+}
+function showWinner(player){
+  document.getElementById("winnerEvent").textContent=state.eventName;
+  document.getElementById("winnerName").textContent=`${player.name} Wins!`;
+  document.getElementById("winnerScore").textContent=`Final score: ${player.score} points`;
+  document.getElementById("winnerPot").textContent=`Prize pot: $${(state.entryFee*state.players.length).toFixed(0)}`;
+  const sorted=[...state.players].sort((a,b)=>b.score-a.score);
+  document.getElementById("finalStandings").innerHTML=sorted.map((p,i)=>`<div class="player-row"><strong>${i+1}. ${p.name}</strong><span>${p.gold?"⭐":"—"}</span><strong>${p.score}</strong></div>`).join("");
+  showScreen("winner");
+}
+function saveGame(){
+  try{localStorage.setItem("bankRollBreakBankSave",JSON.stringify(state));}
+  catch(e){}
+}
+function resumeGame(){
+  try{
+    const saved=localStorage.getItem("bankRollBreakBankSave");
+    if(!saved){alert("No saved game found.");return}
+    state=JSON.parse(saved);
+    if(state.finished){
+      const winner=[...state.players].sort((a,b)=>b.score-a.score)[0];
+      showWinner(winner);
+    }else{
+      renderGame();
+      showScreen("game");
+    }
+  }catch(e){alert("Saved game could not be loaded.");}
+}
+function clearSave(){
+  try{localStorage.removeItem("bankRollBreakBankSave");}catch(e){}
+  alert("Saved game cleared.");
+}
+
+document.getElementById("startBtn").addEventListener("click",()=>{initializeSetup();showScreen("setup")});
+document.getElementById("howBtn").addEventListener("click",()=>showScreen("rules"));
+document.getElementById("resumeBtn").addEventListener("click",resumeGame);
+document.getElementById("clearSaveBtn").addEventListener("click",clearSave);
+document.getElementById("addPlayerBtn").addEventListener("click",()=>addPlayerInput(""));
+document.getElementById("launchBtn").addEventListener("click",startGame);
+document.getElementById("newChallengeBtn").addEventListener("click",newChallenge);
+document.getElementById("goldBtn").addEventListener("click",()=>{
+  const p=state.players[state.currentPlayer];
+  if(!p.gold||state.challengeLocked)return;
+  state.goldActive=true;
+  document.getElementById("status").textContent="Golden Ball activated before the break. This challenge is worth double points.";
+  renderGame();saveGame();
+});
+document.getElementById("madeBtn").addEventListener("click",()=>endTurn(true));
+document.getElementById("missedBtn").addEventListener("click",()=>endTurn(false));
+document.getElementById("saveBtn").addEventListener("click",()=>{saveGame();document.getElementById("status").textContent="Game saved on this device."});
+document.getElementById("endBtn").addEventListener("click",()=>{
+  if(confirm("End this tournament and return home?"))showScreen("home");
+});
+document.getElementById("playAgainBtn").addEventListener("click",()=>{initializeSetup();showScreen("setup")});
+document.querySelectorAll("[data-back-home]").forEach(b=>b.addEventListener("click",()=>showScreen("home")));
+document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>{
+  const id=b.dataset.nav;
+  if(id==="game"&&!state.players.length){initializeSetup();showScreen("setup");return}
+  if(id==="game")renderGame();
+  showScreen(id);
+}));
+
+initializeSetup();
+</script>
+</body>
+</html>
