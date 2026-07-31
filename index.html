@@ -483,5 +483,33 @@ document.querySelectorAll("[data-home]").forEach(b=>b.onclick=()=>show("home"));
 document.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>{const id=b.dataset.nav;if(id==="game"&&!state.players.length){initSetup();show("setup")}else{if(id==="game")render();show(id)}});
 initSetup();
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  /* Remove the arrow */
+  document.querySelectorAll(".rail-mark").forEach(function (arrow) {
+    arrow.remove();
+  });
+
+  /* Move the 9 ball to the right side, at the front of the rack */
+  const nineBall = document.getElementById("calledBallGraphic");
+  if (nineBall) {
+    nineBall.style.left = "72%";
+    nineBall.style.top = "50%";
+  }
+
+  /* Move the two rear balls behind the 9 ball */
+  const rearBallOne = document.getElementById("rackBallGraphic2");
+  if (rearBallOne) {
+    rearBallOne.style.left = "78%";
+    rearBallOne.style.top = "42%";
+  }
+
+  const rearBallTwo = document.getElementById("rackBallGraphic3");
+  if (rearBallTwo) {
+    rearBallTwo.style.left = "78%";
+    rearBallTwo.style.top = "58%";
+  }
+});
+</script>
 </body>
 </html>
