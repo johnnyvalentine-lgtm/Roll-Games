@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0e1a0f" />
+  <title>Guessagator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="brand">
+      <div class="brand-mark">🐊</div>
+      <div>
+        <h1>GUESSAGATOR</h1>
+        <p>Detective Gator is on the case.</p>
+      </div>
+    </header>
+
+    <section id="startScreen" class="panel screen active">
+      <div class="hero-card">
+        <div class="gator-wrap mood-thinking">
+          <div id="gatorAvatar" class="gator-avatar" aria-hidden="true">
+            <div class="hat">🕵️</div>
+            <div class="gator">🐊</div>
+          </div>
+        </div>
+        <div class="case-file">
+          <span class="eyebrow">CASE FILE #001</span>
+          <h2>Think of a character.</h2>
+          <p>Real or fictional. Answer Detective Gator's questions and see if he can crack the case.</p>
+        </div>
+      </div>
+
+      <div class="start-actions">
+        <button id="startBtn" class="btn btn-primary btn-xl">START THE CASE</button>
+        <button id="howBtn" class="btn btn-ghost">How to play</button>
+      </div>
+
+      <details class="howto" id="howPanel">
+        <summary>Quick rules</summary>
+        <p>Pick one character from the demo set. Answer honestly. Guessagator chooses each next question based on which clue best separates the remaining suspects.</p>
+        <p class="small">This MVP includes a starter character database that is easy to expand in <code>game.js</code>.</p>
+      </details>
+
+      <div class="concept-preview">
+        <p>Visual concept</p>
+        <img src="assets/guessagator-concept.png" alt="Guessagator concept art" onerror="this.parentElement.style.display='none'">
+      </div>
+    </section>
+
+    <section id="gameScreen" class="panel screen">
+      <div class="case-topline">
+        <span id="questionCounter">QUESTION 1</span>
+        <span id="suspectCount">Suspects: —</span>
+      </div>
+
+      <div class="detective-stage">
+        <div id="moodBadge" class="mood-badge">EXAMINING CLUES</div>
+        <div id="gatorAvatarGame" class="gator-avatar game-avatar" aria-hidden="true">
+          <div class="hat">🕵️</div>
+          <div class="gator">🐊</div>
+          <div id="moodIcon" class="mood-icon">🔎</div>
+        </div>
+      </div>
+
+      <article class="question-card">
+        <span class="eyebrow">DETECTIVE GATOR:</span>
+        <h2 id="questionText">Is your character real?</h2>
+      </article>
+
+      <div class="answer-grid" role="group" aria-label="Answers">
+        <button class="btn answer yes" data-answer="yes">YES</button>
+        <button class="btn answer no" data-answer="no">NO</button>
+        <button class="btn answer probably" data-answer="probably">PROBABLY</button>
+        <button class="btn answer probably-not" data-answer="probably_not">PROBABLY NOT</button>
+        <button class="btn answer unknown span-2" data-answer="unknown">DON'T KNOW</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+        <div id="clueText" class="small muted">The trail is cold… for now.</div>
+      </div>
+    </section>
+
+    <section id="guessScreen" class="panel screen">
+      <div class="result-burst">CASE CLOSED?</div>
+      <div class="gator-avatar result-avatar" aria-hidden="true">
+        <div class="hat">🕵️</div>
+        <div class="gator">🐊</div>
+        <div class="mood-icon">💡</div>
+      </div>
+      <div class="question-card">
+        <span class="eyebrow">MY BEST GUESS</span>
+        <h2 id="guessName">Someone famous</h2>
+        <p id="guessReason">The clues point here.</p>
+      </div>
+      <div class="answer-grid">
+        <button id="correctBtn" class="btn answer yes span-2">THAT'S RIGHT!</button>
+        <button id="wrongBtn" class="btn answer no span-2">NOPE</button>
+      </div>
+    </section>
+
+    <section id="winScreen" class="panel screen result-panel">
+      <div class="result-burst">CASE CLOSED!</div>
+      <div class="gator-avatar result-avatar"><div class="hat">🕵️</div><div class="gator">🐊</div><div class="mood-icon">🏆</div></div>
+      <h2>I knew it!</h2>
+      <p id="winCopy">Detective Gator cracked the case.</p>
+      <button class="btn btn-primary btn-xl restart">PLAY AGAIN</button>
+    </section>
+
+    <section id="stumpScreen" class="panel screen result-panel">
+      <div class="result-burst purple">YOU STUMPED THE GATOR!</div>
+      <div class="gator-avatar result-avatar"><div class="hat">🕵️</div><div class="gator">🐊</div><div class="mood-icon">🤯</div></div>
+      <h2>Well played.</h2>
+      <p>I need more clues in my case files.</p>
+      <button class="btn btn-primary btn-xl restart">TRY AGAIN</button>
+    </section>
+
+    <footer>
+      <span>BE CLEVER.</span> <span>BE TRICKY.</span> <span>OUTSMART THE GATOR.</span>
+    </footer>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
